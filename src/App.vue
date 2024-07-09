@@ -1,12 +1,18 @@
 <script setup lang="ts">
+import type { Config } from 'node_modules/@aarc-dev/auth-widget-vuejs/dist/types'
 import HelloWorld from './components/HelloWorld.vue'
-import Aarc from '@aarc-dev/auth-widget-vuejs'
+import Aarc, {getMetaMaskProvider} from '@aarc-dev/auth-widget-vuejs'
 
-const aarcAuthStore = Aarc.Store.useAarcAuthStore()
+const aarcAuthStore = Aarc.useAarcAuthStore()
+
 const showModal = aarcAuthStore.openModal
 const closeModal = aarcAuthStore.closeModal
 
-const config: Store.Config = {
+const authClient = aarcAuthStore.authClient
+
+const prov = getMetaMaskProvider()
+console.log('MetaMask Provider', prov)
+const config: Config = {
   aarcApiKey: 'b776f4d7-5df5-4e8c-a128-058bbe3eaace',
   appearance: {
     logoUrl:
@@ -27,6 +33,32 @@ const config: Store.Config = {
 }
 
 aarcAuthStore.setConfig(config)
+
+console.log('Auth Client', aarcAuthStore.authClient)
+
+const getSigner = async () => {
+  // Get Signer
+  console.log('Auth Client', aarcAuthStore.authClient)
+  const signer = await aarcAuthStore?.authClient?.getSigner('https://polygon-rpc.com')
+  console.log('Signer', signer)
+  const walletAddress = await signer.getWalletAddress()
+  console.log('Wallet Address', walletAddress)
+}
+
+const signMessage = async () => {
+  // Sign Message
+  const messageTxt = 'Hello World'
+  const signature = await aarcAuthStore?.authClient?.signMessage(
+    'https://polygon-rpc.com',
+    messageTxt
+  )
+  console.log('Signature', signature)
+}
+
+const signOut = async () => {
+  // Sign Out
+  await aarcAuthStore?.authClient?.signOut()
+}
 </script>
 
 <template>
@@ -43,6 +75,9 @@ aarcAuthStore.setConfig(config)
       />
     </div>
     <button @click="showModal">Open Modal</button>
+    <button @click="getSigner">Get Signer</button>
+    <button @click="signMessage">Sign Message</button>
+    <button @click="signOut">Sign Out</button>
   </header>
 
   <main>
